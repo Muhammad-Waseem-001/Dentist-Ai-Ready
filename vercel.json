@@ -12,8 +12,11 @@
       "dest": "/dialogflow.js"
     },
     {
-      "src": "/",
-      "dest": "/dialogflow.js"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

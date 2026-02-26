@@ -11,6 +11,7 @@ const { createClient } = require("@supabase/supabase-js");
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(express.static(__dirname));
 
 const PORT = process.env.PORT || 8080;
 const CLINIC_NAME = process.env.CLINIC_NAME || "Happy Teeth Clinic";
@@ -176,7 +177,7 @@ function getMailerTransporter() {
 }
 
 app.get("/", (req, res) => {
-  res.send("Server is running!");
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 app.post("/webhook", async (req, res) => {
   var id = res.req.body.session.substr(43);
