@@ -48,6 +48,20 @@ if (!smtpUser || !smtpPass) {
 
 let cachedSheetsClient = null;
 
+function getGooglePrivateKey() {
+  // Supports plain multiline key, escaped newlines, quoted values, and base64-encoded key.
+  if (process.env.GOOGLE_PRIVATE_KEY_BASE64) {
+    return Buffer.from(process.env.GOOGLE_PRIVATE_KEY_BASE64, "base64").toString(
+      "utf8"
+    );
+  }
+
+  if (!process.env.GOOGLE_PRIVATE_KEY) return "";
+
+  const trimmed = process.env.GOOGLE_PRIVATE_KEY.trim().replace(/^"|"$/g, "");
+  return trimmed.replace(/\\n/g, "\n");
+}
+
 function normalizeParam(value) {
   if (value == null) return "";
   if (typeof value === "string") return value.trim();
@@ -83,8 +97,8 @@ function formatDateTime(value) {
 async function getSheetsClient() {
   if (cachedSheetsClient) return cachedSheetsClient;
 
-  const hasEnvCredentials =
-    process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY;
+  const privateKey = getGooglePrivateKey();
+  const hasEnvCredentials = process.env.GOOGLE_CLIENT_EMAIL && privateKey;
   const hasKeyFile = fs.existsSync(GOOGLE_SERVICE_ACCOUNT_KEY_FILE);
 
   if (!hasEnvCredentials && !hasKeyFile) {
@@ -97,7 +111,7 @@ async function getSheetsClient() {
     credentials: hasEnvCredentials
       ? {
           client_email: process.env.GOOGLE_CLIENT_EMAIL,
-          private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+          private_key: privateKey,
         }
       : undefined,
     keyFile: !hasEnvCredentials ? GOOGLE_SERVICE_ACCOUNT_KEY_FILE : undefined,
@@ -180,7 +194,8 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 async function webhookHandler(req, res) {
-  var id = res.req.body.session.substr(43);
+  const session = req?.body?.session || "";
+  const id = session.length > 43 ? session.substr(43) : session;
   console.log(id);
   const agent = new WebhookClient({ request: req, response: res });
 
@@ -242,7 +257,10 @@ How may I assist you today? 😊`);
     }
 
     if (sheetResult.status === "rejected") {
-      console.error("Error saving to Google Sheets:", sheetResult.reason);
+      console.error(
+        "Error saving to Google Sheets:",
+        sheetResult.reason?.message || sheetResult.reason
+      );
     } else {
       console.log("Google Sheets save result:", sheetResult.value);
     }
