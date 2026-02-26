@@ -179,7 +179,7 @@ function getMailerTransporter() {
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
-app.post("/webhook", async (req, res) => {
+async function webhookHandler(req, res) {
   var id = res.req.body.session.substr(43);
   console.log(id);
   const agent = new WebhookClient({ request: req, response: res });
@@ -283,7 +283,10 @@ How may I assist you today? 😊`);
   intentMap.set("Default Fallback Intent", fallback);
   intentMap.set("ticket", booking);
   agent.handleRequest(intentMap);
-});
+}
+
+app.post("/webhook", webhookHandler);
+app.post("/", webhookHandler);
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
