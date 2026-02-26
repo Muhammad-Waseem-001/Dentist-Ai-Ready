@@ -271,7 +271,7 @@ How may I assist you today? 😊`);
 
     if (isPersisted) {
       agent.add(
-        `Thank you ${record.name}. Your dental appointment for ${record.treatment} on ${record.formattedDate} has been booked.`
+        `Thank you, ${record.name}. Your appointment for ${record.treatment} has been confirmed for ${record.formattedDate}. A confirmation email has been sent to ${record.email}. If you need to reschedule, please contact us anytime.`
       );
     } else {
       agent.add(
