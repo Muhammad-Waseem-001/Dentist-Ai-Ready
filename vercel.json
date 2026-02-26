@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "dialogflow.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/webhook",
+      "dest": "/dialogflow.js"
+    },
+    {
+      "src": "/",
+      "dest": "/dialogflow.js"
+    }
+  ]
+}
